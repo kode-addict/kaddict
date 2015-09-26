@@ -38,7 +38,23 @@ class CandidateController extends Controller
             return json_encode($candidateList);
             
         }
-        
+
+        $meta=$candidateList->meta;
+
+        $data=[];
+
+        foreach ($candidateList->data as $key => $value) {
+            
+            $value->like=$this->getLikeCountForCandidate($value->id);
+
+            $data[]=$value;
+        }
+
+        $result['data']=$data;
+
+        $result['meta']=$meta;
+
+        $candidateList=(object)$result;
 
         return view('candidate.all',compact('candidateList'));
     }
@@ -83,7 +99,7 @@ class CandidateController extends Controller
         
         }
 
-        $associatedCandidate=$apirepo->getAssociatedCandidate($candidate);
+        //$associatedCandidate=$apirepo->getAssociatedCandidate($candidate);
 
         $likes=\App\LikeCandidate::where('candidate_id',$id)->count();
 
@@ -135,5 +151,20 @@ class CandidateController extends Controller
         $candidateList=$apirepo->getCandidateListBySearch($request);
 
         dd($candidateList);
+    }
+
+    public function compare($p1,$p2,ApiRepository $apirepo)
+    {
+
+        $person=$apirepo->getCandidateById($p1);
+        
+        $person1=$apirepo->getCandidateById($p2);
+
+        return view('candidate.compare',compact('person','person1'));
+    }
+
+    protected function getLikeCountForCandidate($candidateId)
+    {
+        return \App\LikeCandidate::where('candidate_id',$candidateId)->count();
     }
 }
